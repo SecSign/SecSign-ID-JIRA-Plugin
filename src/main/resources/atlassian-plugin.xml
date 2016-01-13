@@ -1,0 +1,287 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+  <plugin-info>
+    <description>${project.description}</description>
+    <version>${project.version}</version>
+    <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+    <param name="plugin-icon">images/secsign-plugin-icon.png</param>
+    <param name="plugin-logo">images/secsign-logo.png</param>
+    <param name="configure.url">/secure/ViewSecSignIDOptions!show.jspa</param>
+  </plugin-info>
+
+
+  <!-- add our i18n resource -->
+  <resource type="i18n" name="i18n" location="secsignid"/>
+  
+  
+  <!-- publish our component -->
+  <component key="com.secsign.jira.SecSignIDPluginComponent" 
+  			name="SecSignIDPluginComponent"
+  			class="com.secsign.jira.SecSignIDPluginComponentImpl" 
+  			public="true">
+    <description>The SecSign ID component.</description>
+    <interface>com.secsign.jira.SecSignIDPluginComponent</interface>
+  </component>
+  
+  
+  <!-- import from the product container -->
+  <component-import key="applicationProperties" name="JIRA Application Properties" interface="com.atlassian.sal.api.ApplicationProperties"/>
+  <component-import key="ao" name="JIRA Active Objects Service" interface="com.atlassian.activeobjects.external.ActiveObjects" />
+  <component-import key="userManager" name="JIRA UserManager" interface="com.atlassian.sal.api.user.UserManager" />
+  <component-import key="loginUriProvider" name="JIRA Login URI Provider" interface="com.atlassian.sal.api.auth.LoginUriProvider" />
+  <component-import key="velocityTemplateRenderer" name="JIRA Velocity Template Renderer" interface="com.atlassian.templaterenderer.TemplateRenderer"/>
+  <component-import key="pluginSettingsFactory" name="JIRA Plugin Setting Factory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory" />
+  <component-import key="I18nResolver" name="JIRA I18N Resolver" interface="com.atlassian.sal.api.message.I18nResolver" filter=""/>  
+ 
+
+  
+  
+  
+  <!-- Active Objects modules -->
+<ao key="ao.module" i18n-name-key="ao.module">
+    <description>The Active Objects service used by this plugin</description>
+    <entity>com.secsign.jira.ao.SecSignIDUsers</entity>
+    <entity>com.secsign.jira.ao.SecSignPwdOpt</entity>
+</ao>
+
+ 
+  <!-- add our web resources -->
+  <web-resource key="secsignid-resources" name="SecSign ID Web Resources">
+    <dependency>com.atlassian.auiplugin:ajs</dependency>
+    <context>atl.general</context>
+    <resource type="download" name="secsignid.css" location="/css/secsignid.css"/>
+    <resource type="download" name="images/" location="/images"/>
+    <resource type="download" name="secsign-company-logo.png" location="/images/secsign-company-logo.png"/>
+    <resource type="download" name="secsign-logo.png" location="/images/secsign-logo.png"/>
+    <resource type="download" name="secsign-logo-grey.png" location="/images/secsign-logo-grey.png"/>
+  </web-resource>
+  
+  
+  <web-resource key="secsignid-api-resources" name="SecSign ID Web Resources to use SecSign ID Api">
+    <resource type="download" name="SecSignIDApi.js" location="/js/SecSignIDApi.js"/>
+    <context>secsignid-js-api</context>
+  </web-resource>
+  
+  
+  <web-resource key="secsignid-login-resources-jira" name="SecSign ID Web Resources for Jira login" application="jira">
+  	<dependency>com.atlassian.auiplugin:ajs</dependency>
+    <context>atl.general</context>
+    <resource type="download" name="secsignid-login.css" location="/css/secsignid-login.css"/>
+    <resource type="download" name="secsignid-login.js" location="/js/secsignid-login.js"/>
+    <resource type="download" name="secsign-company-logo.png" location="/images/secsign-company-logo.png"/>
+    <resource type="download" name="secsign-logo.png" location="/images/secsign-logo.png"/>
+    <resource type="download" name="secsign-logo-grey.png" location="/images/secsign-logo-grey.png"/>
+  </web-resource>
+  
+  
+  <web-resource key="secsignid-login-resources-confluence" name="SecSign ID Web Resources for Jira login" application="confluence">
+  	<dependency>com.atlassian.auiplugin:ajs</dependency>
+	<context>login</context>
+    <resource type="download" name="secsignid-login.css" location="/css/secsignid-login.css"/>
+    <resource type="download" name="secsignid-login.js" location="/js/secsignid-login.js"/>
+    <resource type="download" name="secsign-company-logo.png" location="/images/secsign-company-logo.png"/>
+    <resource type="download" name="secsign-logo.png" location="/images/secsign-logo.png"/>
+    <resource type="download" name="secsign-logo-grey.png" location="/images/secsign-logo-grey.png"/>
+  </web-resource>
+  
+  
+  <web-resource key="secsignid-viewuser" name="SecSign ID Web Resource for Jira ViewUser.jsp">
+    <dependency>com.atlassian.auiplugin:ajs</dependency>
+    <dependency>com.atlassian.auiplugin:dialog2</dependency>
+    <context>atl.admin</context>
+    <resource type="download" name="secsignid.css" location="/css/secsignid.css"/>
+    <resource type="download" name="secsignid-viewuser.js" location="/js/secsignid-viewuser.js"/>
+    <resource type="download" name="secsign-logo-grey.png" location="/images/secsign-logo-grey.png"/>
+  </web-resource>
+
+  
+  
+<servlet name="SecSign ID Authenticator" 
+         key="com.secsign.jira.servlet.SecSignIDAuthenticator" 
+         class="com.secsign.jira.servlet.SecSignIDAuthenticator">
+    <description>SecSign ID 2FA Authenticator</description>
+    <url-pattern>/secsignid</url-pattern>
+</servlet>
+
+
+<servlet-filter name="SecSignIDAuthenticationFilter" 
+                key="com.secsign.jira.servlet.filter.SecSignIDAuthenticationFilter" 
+                class="com.secsign.jira.servlet.filter.SecSignIDAuthenticationFilter"
+                location="before-login" 
+                weight="200">
+        <description>SecSign ID Filter</description>
+        <url-pattern>/login.jsp*</url-pattern>
+        <url-pattern>/*/Dashboard.jspa*</url-pattern>
+        <url-pattern>*mobile*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+</servlet-filter>
+
+
+<servlet-filter name="SecSignIDPasswordLoginFilter" 
+                key="com.secsign.jira.servlet.filter.SecSignIDPasswordLoginFilter" 
+                class="com.secsign.jira.servlet.filter.SecSignIDPasswordLoginFilter"
+                location="before-login" 
+                weight="200">
+        <description>SecSign ID Filter for password login filtering</description>
+        <url-pattern>/login.jsp*</url-pattern>
+        <url-pattern>/*/Dashboard.jspa*</url-pattern>
+        <url-pattern>*mobile*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+</servlet-filter>
+
+
+<servlet-filter name="SecSignIDViewUserFilter" 
+                key="com.secsign.jira.servlet.filter.SecSignIDViewUserFilter" 
+                class="com.secsign.jira.servlet.filter.SecSignIDViewUserFilter"
+                location="before-decoration" 
+                weight="200">
+        <description>SecSign ID Filter for JIRAs ViewUser.jsp</description>
+        <!--<url-pattern>/secure/admin/user/ViewUser.jspa</url-pattern>-->
+        <url-pattern>*ViewUser.jspa*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+</servlet-filter>
+
+
+<servlet-filter name="SecSignIDCreateUserFilter" 
+                key="com.secsign.jira.servlet.filter.SecSignIDCreateUserFilter" 
+                class="com.secsign.jira.servlet.filter.SecSignIDCreateUserFilter"
+                location="before-dispatch" 
+                weight="200">
+        <description>SecSign ID Filter for JIRAs create user process</description>
+        <!--<url-pattern>/secure/admin/user/ViewUser.jspa</url-pattern>-->
+        <url-pattern>*AddUser*.jspa</url-pattern>
+        <url-pattern>*SignUp*.jspa</url-pattern>
+        <url-pattern>*SignUp.jspa</url-pattern>
+        <url-pattern>*Signup*.jspa</url-pattern>
+        <url-pattern>*Signup.jspa</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+</servlet-filter>
+
+<component key="com.secsign.jira.listener.SecSignIDUserEventListener" class="com.secsign.jira.listener.SecSignIDUserEventListener">
+    <description>Class that processes the incoming event with a jira user.</description>
+</component>
+
+
+<webwork1 key="com.secsign.jira.actions.ViewSecSignIDOptions" 
+			name="Action to show SecSign ID Options and the mappings between SecSign IDs and JIRA users"
+			i18n-name-key="com.secsign.jira.actions.SecSignIDPluginManagementAction"
+        class="java.lang.Object"
+        roles-required="sysadmin">
+    <actions>
+      <action name="com.secsign.jira.actions.SecSignIDPluginManagementAction" alias="ViewSecSignIDOptions" roles-required="sysadmin">
+		<view name="input">/templates/secsignid-options-and-users-page.vm</view>
+        <view name="success">/templates/secsignid-options-and-users-page.vm</view>
+		<view name="error">/templates/secsignid-options-and-users-page.vm</view>
+		<view name="options">/templates/secsignid-options-page.vm</view>
+		<view name="users">/templates/secsignid-users-page.vm</view>
+      </action>
+    </actions>
+</webwork1>
+
+
+<webwork1 key="com.secsign.jira.actions.SecSignID" 
+		name="SecSignID View Profile"
+		i18n-name-key="com.secsign.jira.actions.SecSignIDAction"
+        class="java.lang.Object"
+        roles-required="use">
+    <actions>
+      <action name="com.secsign.jira.actions.SecSignIDAction" alias="SecSignID" roles-required="use">
+        <view name="input">/templates/secsignid-viewprofile-dialog.vm</view>
+        <view name="success">/templates/secsignid-viewprofile-dialog.vm</view>
+		<view name="error">/templates/secsignid-viewprofile-dialog.vm</view>
+      </action>
+    </actions>
+</webwork1>
+
+<webwork1 key="com.secsign.jira.actions.SecSignIDAddUser" 
+		name="SecSignIDAddUserAction"
+		i18n-name-key="com.secsign.jira.actions.SecSignIDAddUserAction"
+        class="java.lang.Object"
+        roles-required="sysadmin">
+     <actions>
+        <action name="com.secsign.jira.actions.SecSignIDAddUserAction" alias="AddUser" roles-required="sysadmin">
+            <view name="error">/secure/admin/user/views/adduser.jsp</view>
+            <view name="input">/secure/admin/user/views/adduser.jsp</view>
+        </action>
+    </actions>
+</webwork1>
+
+
+<!-- no roles-required otherwise the user must be logged in to signup. -->
+<webwork1 key="com.secsign.jira.actions.SecSignIDSignUp" 
+		name="SecSignIDSignUpAction"
+		i18n-name-key="com.secsign.jira.actions.SecSignIDSignUpAction" 
+        class="java.lang.Object">
+     <actions>
+        <action name="com.secsign.jira.actions.SecSignIDSignUpAction" alias="Signup">
+            <view name="success">/views/signup-success.jsp</view>
+            <view name="limitexceeded">/views/signup-limitexceeded.jsp</view>
+            <view name="alreadyloggedin">/views/signup-alreadyloggedin.jsp</view>
+            <view name="error">/views/signup.jsp</view>
+            <view name="input">/views/signup.jsp</view>
+            <view name="modebreach">/views/modebreach.jsp</view>
+            <view name="systemerror">/views/signup-systemerror.jsp</view>
+        </action>
+    </actions>
+</webwork1>
+
+
+<web-item name="SecSign ID Dialog Web Item" 
+		  i18n-name-key="secsignid-dialog-web-item.name" 
+		  key="secsignid-dialog-web-item" 
+		  section="secsignid-dialog" weight="10">
+    <description key="secsignid-dialog-web-item.description">SecSign ID Dialog</description>
+    <conditions type="and">
+      <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsIssueEditableCondition"/>
+      <condition class="com.atlassian.jira.plugin.webfragment.conditions.HasIssuePermissionCondition">
+        <param name="permission" value="edit"/>
+      </condition>
+      <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsFieldHiddenCondition" invert="true">
+        <param name="field" value="fixVersions"/>
+      </condition>
+    </conditions>
+    <label key="secsignid-dialog-web-item.label"/>
+    <link linkId="secsign-dialog-lnk">/secure/SecSignID!dialog.jspa?username=${userName}</link>
+    <styleClass>trigger-secsign-dialog</styleClass>
+</web-item>
+
+
+
+<!-- create web panels which are displayed when clicking at the options or user mappings menu item -->
+
+<web-panel name="SecSignIDJiraViewProfile" 
+    		i18n-name-key="sec-sign-id-jira-user-info.name" 
+    		key="sec-sign-id-jira-user-info" 
+    		location="webpanels.user.profile.summary.custom" weight="150">
+    <label key="sec-sign-id-jira-user-info.title">SecSign ID</label>
+    <description key="sec-sign-id-jira-user-info.description">Shows the assigned SecSign ID to this JIRA user</description>
+    <context-provider class="com.secsign.jira.contextproviders.SecSignIDJiraUserInfoProvider"/>
+    <resource name="view" type="velocity" location="/templates/secsignid-viewprofile.vm"/>
+</web-panel>
+
+
+
+<!-- menu item for users and group configuration -->
+<web-item key="secsign_id_menu_sidebar" 
+			i18n-name-key="secsign_id_menu_sidebar.title" 
+    		name="SecSign ID user groups admin menu" 
+    		section="users_groups_configuration/embedded_crowd_section" weight="200">
+    <label key="secsignid.sidemenu.label">SecSign ID 2FA Login</label>
+    <link linkId="secsignid_options">/secure/ViewSecSignIDOptions!show.jspa</link>
+    <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserIsAdminCondition"/>
+    <description key="secsignid.menu.description">Options and user mappings for SecSign ID</description>
+    <tooltip key="secsignid.menu.tooltip">Options and user mappings for SecSign ID</tooltip>
+</web-item>
+
+
+
+<!-- create menu item which shall be displayed in top most menu at every page of jira -->
+  
+<web-section key="secsign_id_menu_section" name="SecSign ID Menu Section" location="secsign_id_menu" weight="10"/>
+<web-item key="secsign_id_menu" name="SecSign ID top navigation menu" i18n-name-key="secsign_id_menu.title"  section="system.top.navigation.bar" weight="100">
+    <label key="secsignid.menu.label">SecSign ID</label>
+    <link linkId="secsignid_options">/secure/ViewSecSignIDOptions!show.jspa</link>
+    <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserIsAdminCondition"/>
+    <description key="secsignid.menu.description">Options and user mappings for SecSign ID</description>
+    <tooltip key="secsignid.menu.tooltip">Options and user mappings for SecSign ID</tooltip>
+</web-item>
+</atlassian-plugin>
