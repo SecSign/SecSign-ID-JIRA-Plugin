@@ -7,9 +7,9 @@ The login with SecSign ID can be performed conveniently and securely with a smar
 
 **Usage**
 SecSign ID plugin for Atlassian JIRA Server.
-The plugin can be found at [Atlassian Marketplace]<https://marketplace.atlassian.com/plugins/com.secsign.secsignid/server/overview>. 
+The plugin can be found at (Atlassian Marketplace)<https://marketplace.atlassian.com/plugins/com.secsign.secsignid/server/overview>. 
 
-A more detailed tutorial how to install the plugin is available [here]<https://www.secsign.com/jira-2fa-tutorial-en/>.
+A more detailed tutorial how to install the plugin is available (here)<https://www.secsign.com/jira-2fa-tutorial-en/>.
 
 ===============
 
@@ -32,8 +32,8 @@ You have to accept this access pass on your smartphone.
 
 **Information about the plugin**
 
-For further information about JIRA in general have a look at the [JIRA installation tutorial]<https://www.secsign.com/jira-installation-and-setup-tutorial/> or 
-at the [Atlassian JIRA Users Guide]<https://confluence.atlassian.com/jira/jira-user-s-guide-100303115.html>.
+For further information about JIRA in general have a look at the (JIRA installation tutorial)<https://www.secsign.com/jira-installation-and-setup-tutorial/> or 
+at the (Atlassian JIRA Users Guide)<https://confluence.atlassian.com/jira/jira-user-s-guide-100303115.html>.
 
 ===============
 
