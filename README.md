@@ -37,4 +37,4 @@ at the [Atlassian JIRA Users Guide](https://confluence.atlassian.com/jira/jira-u
 
 ===============
 
-SecSign Technologies Inc. official site: (https://www.secsign.com)
+SecSign Technologies Inc. official site: <https://www.secsign.com>
