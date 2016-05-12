@@ -1,0 +1,84 @@
+<div id="secsignid-profile-fragment" class="module">
+
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+$webResourceManager.requireResource("com.atlassian.auiplugin:dialog2")
+
+<script>
+	AJS.toInit(function($) { 
+		// var $ = jQuery.noConflict(); // should be handled by JIRA and AJS
+		AJS.$("#secsignid-button").click(function() {
+			AJS.dialog2("#secsignid-dialog").show();
+		});
+		
+		
+		AJS.$("#dialog-close-button").click(function(event) {
+			event.preventDefault();
+			AJS.dialog2("#secsignid-dialog").hide();
+		});
+	});
+</script>
+
+<h3>$i18n.getText('secsignid.name')</h3>
+
+    <ul class="item-details">
+        <li>
+<dl title="$i18n.getText('secsignid.profile.secsignid.tooltip')">
+	<dt>$i18n.getText('secsignid.name'):</dt><dd id="secsignid" class="description">
+        $!secsignid
+    </dd>
+</dl>
+
+
+<dl>
+	<dt></dt>
+	<dd class="description">
+        <button class="secsignid-button" 
+		style="float:right;width:100px;height:25px"
+		id="secsignid-button" 
+		name="secsignid-button" accesskey="E" title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.name')</button>
+
+    </dd>
+</dl>
+
+</li></ul>
+
+
+<!-- https://docs.atlassian.com/aui/latest/docs/dialog2.html -->
+<section role="dialog" id="secsignid-dialog" class="aui-layer aui-dialog2 aui-dialog2-medium" aria-hidden="true">
+    <form action="secure/SecSignID.jspa" method="post" class="aui">
+    
+    <!-- Dialog header -->
+    <header class="aui-dialog2-header">
+        <h2 class="aui-dialog2-header-main">$i18n.getText('secsignid.dialog.secsignid.description') $jirausername</h2>
+        <a class="aui-dialog2-header-close">
+            <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">$i18n.getText('secsignid.buttons.close.name')</span>
+        </a>
+    </header>
+    
+    <!-- Main dialog content -->
+    <div class="aui-dialog2-content">
+    	<span style="paddin:0 10px;">$i18n.getText('secsignid.name')</span>
+		<input type="text" id="secsignid" name="secsignid" value="$secsignid" autocapitalize="off" autocorrect="off">
+		
+		<input type="hidden" id="jirauser" name="jirauser"  value="$jirauser">
+		<!--<input type="hidden" id="returnUrl" name="returnUrl"  value="ViewProfile.jspa?name=$jirauser">-->
+		<input type="hidden" id="returnUrl" name="returnUrl"  value="$referingUri">
+    </div>
+    
+    
+    <!-- Dialog footer -->
+    <footer class="aui-dialog2-footer">
+        <div class="aui-dialog2-footer-actions">
+        	<button id="dialog-close-button" class="aui-button aui-button-link">$i18n.getText('secsignid.buttons.cancel.name')</button>
+        	
+            <button id="dialog-save-button" 
+            type="submit"
+            class="aui-button"
+            style="margin-left:20px">$i18n.getText('secsignid.buttons.save.name')</button>
+
+        </div>
+    </footer>
+    </form>
+</section>
+
+</div>

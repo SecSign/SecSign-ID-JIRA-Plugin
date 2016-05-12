@@ -1,0 +1,65 @@
+
+<script>
+require(["jquery", "underscore"], function ($, _) {
+
+        $(document).ready(function () {
+				var lastFieldGroup = $(".form-body .field-group").last();
+				var lastGroup = $(".form-body fieldset.group").last();
+				
+				var elementToAppend = lastGroup.length > 0 ? lastGroup : lastFieldGroup;
+
+				// do we find the place where to put our group fields?
+				if(elementToAppend.length > 0){
+					var secSignFieldGroup = $("#secsignid-additional-fields");
+					secSignFieldGroup.show();
+					elementToAppend.after(secSignFieldGroup);
+				}
+        });
+});
+</script>
+
+<div id="secsignid-additional-fields" style="display:none">
+	<div id="secsignid-field-group" class="secsignid-field-group field-group" style="margin-top:20px;">
+		<label for="user-create-secsignid"><span class="secsign-logo-adduser grey">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> SecSign ID<!--<span class="aui-icon icon-required"> required</span>--></label>
+		<input class="text" id="user-create-secsignid" maxlength="255" name="secsignid" type="text" value="$!secsignid"  title="$i18n.getText('secsignid.users.create.secsignid.description')" autocapitalize="off" autocorrect="off">
+		<a href="$i18n.getText('secsignid.messages.2faurl')" target="_blank" style="margin-left:10px"><span style="font-size:10px;color:#707070;">FAQ</span></a>
+		#if($!error)
+		<div id="user-create-secsignid-error" data-field="secsignid" class="error">$!error</div>
+		#end
+		<div class="description" title="$i18n.getText('secsignid.users.create.secsignid.description')">$i18n.getText('secsignid.users.create.secsignid.description')</div>
+	</div>
+
+	<div id="secsignid-pwd-field-group" class="secsignid-field-group field-group" style="margin-bottom:20px;display:$showpwdloginoption">
+		<!--<label for="user-create-secsignid">Password login still allowed?</label>
+		<input class="text" id="user-create-secsignid" maxlength="255" name="secsignid" type="checkbox">-->
+		<div class="checkbox">
+			#if($!pwdallowed || $!default)
+			<input class="checkbox" id="user-create-secsignid-pwdallowed" name="secsignid-pwdallowed" value="true" type="checkbox" checked=checked>
+			#else
+			<input class="checkbox" id="user-create-secsignid-pwdallowed" name="secsignid-pwdallowed" value="true" type="checkbox">
+			#end
+			<label for="user-create-secsignid-pwdallowed" title="$i18n.getText('secsignid.users.create.secsignid.password.allowed.description')">$i18n.getText('secsignid.users.create.secsignid.password.allowed')</label>
+			<div class="description">$i18n.getText('secsignid.users.create.secsignid.password.allowed.description')</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+
+
+    
+
+
+
+
+
+     
+
+
+    
+
+        
+    

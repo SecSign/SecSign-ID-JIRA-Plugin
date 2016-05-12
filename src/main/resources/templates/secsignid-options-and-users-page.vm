@@ -1,0 +1,286 @@
+<html>
+<head>
+<title>$i18n.getText("secsignid.menu.options.label")</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="decorator" content="atl.admin" />
+<meta name="admin.active.section" content="users_groups_configuration/embedded_crowd_section" />
+<meta name="admin.active.tab" content="secsignid_options" />
+
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+</head>
+<body>
+
+<div class="secsign-logo-small"></div><h1 style="display:inline;margin-left:10px;">$i18n.getText('secsignid.menu.optsusers.label')</h1>
+
+<div class="secsignid-cl x2"></div>
+<div>$i18n.getText('secsignid.plugin.description')</div>
+<div class="secsignid-cl"></div>
+
+<div id="secsignid-options-wrapper" class="secsignid-wrapper">
+	<header class="aui-page-header"><div class="aui-page-header-inner"><div class="aui-page-header-main">
+		<h2>$i18n.getText('secsignid.options.options')</h2>
+	</div></div></header>
+	
+	#if($showOptionsMessage)
+		<div class="aui-message aui-message-success">
+    		<p class="title">
+       		 <strong>$i18n.getText('secsignid.messages.success')</strong>
+    		</p>
+    		<p>$i18n.getText('secsignid.options.saved.sucessfully')</p>
+		</div>
+	#end
+	
+	#if(${action.hasErrorMessages})
+    	<div class="aui-message error"><span class="aui-icon icon-error"></span>
+			#foreach($message in $action.flushedErrorMessages)
+            	<p>$message</p>
+        	#end
+    	</div>
+	#end
+	
+	<div class="secsignid-cl x2"></div>
+	
+	#if($showValues)
+	<form id="secsignid-options" method="post" action="${req.contextPath}/secure/$secSignActionName!editOptions.jspa">
+	#else
+	<form id="secsignid-options" method="post" action="${req.contextPath}/secure/$secSignActionName!saveOptions.jspa">
+	#end
+	
+	<div class="secsignid-lb">
+		<div class="secsignid-leftcolumn secsignid-label" title="$i18n.getText('secsignid.options.servicename.description')">$i18n.getText('secsignid.options.servicename.name')</div>
+			
+		#if($showValues)
+		<!--<div class="secsignid-rightcolumn secsignid-label value">$action.getServiceName()</div>-->
+		<div class="secsignid-rightcolumn secsignid-label value">$textutils.htmlEncode(${serviceName})</div>
+		#else	
+		## Note: ${serviceName} is the same as $action.getServiceName()
+        ## It's important to encode the inputs to avoid XSS hacks
+        ## JSP does this for you but Velocity templates don't.
+		<input 	class="secsignid-rightcolumn"
+					type="text" 
+					id="serviceName" 
+					name="serviceName"
+					value="$textutils.htmlEncode(${serviceName})"
+					title="$i18n.getText('secsignid.options.servicename.description')"
+					size="125"
+					style="height:17px;"/>
+		#end
+			
+	</div>
+
+	<div class="secsignid-cl"></div>
+	
+	<div class="secsignid-lb">
+		<div class="secsignid-leftcolumn secsignid-label" title="$i18n.getText('secsignid.options.idserverurl.description')">$i18n.getText('secsignid.options.idserverurl.name')</div>
+			
+		#if($showValues)
+		<div class="secsignid-rightcolumn secsignid-label value">$action.getIdServerUrl()</div>
+		#else
+		<input 	class="secsignid-rightcolumn"
+					type="text" 
+					id="idServerUrl" 
+					name="idServerUrl"
+					value="$textutils.htmlEncode(${idServerUrl})"
+					title="$i18n.getText('secsignid.options.idserverurl.description')"
+					size="125"
+					style="height:17px;"/>
+		#end
+			
+	</div>
+
+	<div class="secsignid-cl"></div>
+		
+	<div>
+		#if($showValues)
+			<button style="float:right" class="secsignid-button aui-button" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="E" 
+					title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.options.name')</button>
+		#else
+			<button style="float:right" class="secsignid-button aui-button aui-button-primary" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="S" 
+					title="$i18n.getText('secsignid.buttons.save.name')">$i18n.getText('secsignid.buttons.save.options.name')</button>
+		#end
+	</div>
+	</form>          
+</div>   
+
+
+<div id="secsignid-users-wrapper" class="secsignid-wrapper">
+	<header class="aui-page-header"><div class="aui-page-header-inner"><div class="aui-page-header-main">
+			<h2>$i18n.getText('secsignid.options.secsignid')</h2>
+	</div></div></header>
+	
+	#if($showUsersMessage)
+		<div class="aui-message aui-message-success">
+    		<p class="title">
+       		 <strong>$i18n.getText('secsignid.messages.success')</strong>
+    		</p>
+    		<p>$i18n.getText('secsignid.users.saved.sucessfully')</p>
+		</div>
+	#end
+	
+	<div class="secsignid-cl"></div>
+
+	<div>$i18n.getText('secsignid.menu.users.description.detailed')</div>
+	
+	<div class="secsignid-cl x2"></div>
+	
+	#if($showValues)
+	<form id="secsignid-users-mapping" method="post" action="${req.contextPath}/secure/$secSignActionName!editUsers.jspa">
+	#else
+	<form id="secsignid-users-mapping" method="post" action="${req.contextPath}/secure/$secSignActionName!saveUsers.jspa">
+	#end
+
+		#foreach($group in $groupNames)
+			#set($userlist = $jiraUsersByGroup.get($group))
+			#if($userlist.size() > 0)
+			
+			#if($group == 'jira-users')
+				
+			#end
+			
+			<div class="secsignid-lb">
+				<div class="secsignid-label groupname">$group</div>
+			</div>
+
+			<div class="secsignid-lb">
+				<div class="secsignid-leftcolumn secsignid-label"><b>$i18n.getText('secsignid.users.username.label')</b></div>
+				<div class="secsignid-rightcolumn secsignid-label" style="text-indent:0"><b>$i18n.getText('secsignid.users.secsignid.label')</b></div>
+				<!--<div class="secsignid-rightcolumn secsignid-label"><b>$i18n.getText('secsignid.options.pwdallowed')</b></div>-->
+			</div>
+		
+
+			<div class="secsignid-cl"></div>
+		
+
+			##foreach ($user in $jiraUsers)
+			#foreach ($user in $userlist)
+				#set($name = $!user.getDisplayName())
+				#set($key = $!user.getKey())
+				#set($active = $!user.isActive())
+				#set($secSignIdArr = $secSignIdMappings.get($key))
+				#set($pwdIsAllowed = $pwdAllowed.get($key) == $pwdIsAllowedValue)
+				#set($pwdkey = "${key}-pwd-allowed")
+			
+				#set($secSignId="")
+				#foreach ($!element in $secSignIdArr)
+					#if($element != "")
+						#if($secSignId != "")
+							#set($secSignId = "$secSignId, $element")
+						#else
+							#set($secSignId = "$element")
+						#end
+					#end
+				#end
+			
+				<div class="secsignid-lb">
+					<div class="secsignid-leftcolumn secsignid-label">
+						<a href="$action.getUserProfileLink($user)" title="$name ($key)" id="$key" rel="$key" class="user-hover user-avatar" style="padding-left:0px;">
+							<img src="$action.getUserProfileImageLink($user)" width=16 height=16 alt="$name ($key)" style="float:left;margin-top:2px;"> 
+							#if($active)
+								$name
+							#else
+							<span style="text-decoration:line-through;">
+								$name
+							</span>
+							#end
+						</a> 
+							#if($active)
+								($key)
+							#else
+							(<span style="text-decoration:line-through;">$key</span>) / $i18n.getText('secsignid.users.secsignid.inactive')
+							#end
+						</div>
+
+					#if($showValues)
+					<div class="secsignid-rightcolumn secsignid-label value">$!secSignId</div>
+					#else
+					<input 	class="secsignid-rightcolumn"
+							type="text" 
+							id="$key" 
+							name="$key"
+							value="$secSignId"
+							title="$i18n.getText('secsignid.users.secsignid.description') $name"
+							size="125"
+							style="height:17px;"/>
+					#end
+
+					<label for="$pwdkey" style="float:left;margin-left:20px;width:40%;font-size:10pt;margin-top:3px;">
+					#if($showValues)
+						#if($pwdIsAllowed)
+							<input 	class="secsignid-rightcolumn pwd-allowed"
+								type="checkbox"
+								id="$pwdkey" 
+								name="$pwdkey"
+								value="1"
+								checked="checked"
+								DISABLED
+								title="$i18n.getText('secsignid.options.pwdallowed')"/>
+						#else
+
+							<input 	class="secsignid-rightcolumn pwd-allowed"
+								type="checkbox" 
+								id="$pwdkey" 
+								name="$pwdkey"
+								value="1"
+								DISABLED
+								title="$i18n.getText('secsignid.options.pwdallowed')"/>
+						#end
+					#else
+						#if($pwdIsAllowed)
+							<input 	class="secsignid-rightcolumn pwd-allowed"
+								type="checkbox" 
+								id="$pwdkey" 
+								name="$pwdkey"
+								value="1"
+								checked="checked"
+								title="$i18n.getText('secsignid.options.pwdallowed')"/>
+						#else
+
+							<input 	class="secsignid-rightcolumn pwd-allowed"
+								type="checkbox" 
+								id="$pwdkey" 
+								name="$pwdkey"
+								value="1"
+								title="$i18n.getText('secsignid.options.pwdallowed')"/>
+						#end
+					#end
+				
+					$i18n.getText('secsignid.options.pwdallowed') </label>
+				
+					<div class="secsignid-rightcolumn secsignid-label description">
+						$i18n.getText('secsignid.options.groups') $action.getGroupNamesForUser($user)
+					</div>
+				</div>
+			
+				<div class="secsignid-cl"></div>
+			#end
+			
+			<div class="secsignid-cl"></div>
+			#end
+		#end
+
+		<div style="clear:both;">
+			<div class="aui-message info">
+				<span class="aui-icon icon-info"></span>
+				<p>
+					<span style="color:#003366">$i18n.getText('secsignid.menu.users.description.detailed.nosecsignid')</span> <span>$i18n.getText('secsignid.menu.users.description.detailed.selfassign')</span>
+				</p>
+			</div>
+		</div>
+		
+		<div class="secsignid-cl 2x" style="clear:both;"></div>
+		
+		<div>
+		#if($showValues)
+			<button style="float:right" class="secsignid-button aui-button" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="E" 
+					title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.users.name')</button>
+		#else
+			<button style="float:right" class="secsignid-button aui-button aui-button-primary" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="S" 
+					title="$i18n.getText('secsignid.buttons.save.name')">$i18n.getText('secsignid.buttons.save.users.name')</button>
+		#end
+		</div>
+
+	</form>          
+</div>         
+
+</body>
+</html>

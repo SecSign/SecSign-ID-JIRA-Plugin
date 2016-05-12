@@ -1,0 +1,329 @@
+<html>
+<head>
+<title>$i18n.getText("secsignid.menu.users.label")</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="decorator" content="atl.admin" />
+<meta name="admin.active.section" content="users_groups_configuration/embedded_crowd_section" />
+<meta name="admin.active.tab" content="secsignid_options" />
+<!--$webResourceManager.requireResource("com.atlassian.auiplugin:ajs")-->
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+
+<script type="text/javascript">
+/**
+ * (c) 2016 SecSign Technologies Inc.
+ *
+ * Adding some functionality to the ViewUser.jspa page
+ */
+/*require(["jquery", "underscore"], function ($, _) {
+
+        $(document).ready(function () {
+        	
+        });
+});*/
+
+AJS.toInit(function($) {
+	var inputFields = AJS.$("input[type=text]");
+	var checkBoxes = AJS.$("input[type=checkbox]");
+	var starDescr = AJS.$(".star-descr");
+	
+	inputFields.on("input", function(){
+		var f = AJS.$(this);
+		var group = f.parent(".field-group");
+		var checkbox = group.find("input[type=checkbox]");
+
+		if(f.val() == "" && !checkbox.attr("checked")){
+			group.find(".star").addClass("v").show();
+		} else {
+			group.find(".star").removeClass("v").hide();	
+		}
+		
+		var visibleStars = AJS.$("#secsignid-users-mapping .star.v");
+		if(visibleStars.length > 0){
+			starDescr.fadeIn();
+		} else {
+			starDescr.fadeOut(200);
+		}
+	});
+	
+	checkBoxes.on("click", function(){
+		var chk = AJS.$(this);
+		var group = chk.parents(".field-group");
+		var inputField = group.find("input[type=text]");
+		if(inputField.val() == "" && !chk.attr("checked")){
+			group.find(".star").addClass("v").show();
+		} else {
+			group.find(".star").removeClass("v").hide();	
+		}
+		
+		var visibleStars = AJS.$("#secsignid-users-mapping .star.v");
+		if(visibleStars.length > 0){
+			starDescr.fadeIn();
+		} else {
+			starDescr.fadeOut(200);
+		}
+	});
+});
+</script>
+</head>
+<body>
+
+<div id="secsignid-users-wrapper"  class="secsignid-wrapper no-border">
+	<header class="aui-page-header"><div class="aui-page-header-inner"><div class="aui-page-header-main">
+		<div class="secsign-logo-small"></div><h1>$i18n.getText('secsignid.menu.users.label')</h1>
+	</div></div></header>
+	
+	#if($showMessage)
+		<div class="aui-message aui-message-success">
+    		<p class="title">
+       		 <strong>$i18n.getText('secsignid.messages.success')</strong>
+    		</p>
+    		<p>$i18n.getText('secsignid.users.saved.sucessfully')</p>
+		</div>
+	#end
+	
+	#if(${action.hasErrorMessages})
+    	<div class="aui-message error"><span class="aui-icon icon-error"></span>
+			#foreach($message in $action.flushedErrorMessages)
+            	<p>$message</p>
+        	#end
+    	</div>
+    	
+    	<script type="text/javascript">
+			AJS.toInit(function($) {
+				var errorField = AJS.$("input.secsign-error");
+				/*errorField.change(function(){
+					var f = AJS.$(this);
+					f.removeClass("secsign-error");
+					f.next().fadeOut();
+				});*/
+				
+				/*errorField.keydown(function (){
+					var f = AJS.$(this);
+					f.data("old-length", f.val().length);
+				}).keypress(function(){
+					var f = AJS.$(this); // field == f
+					var ol = f.data("old-length"); // old length == ol
+					var l = f.val().length; // length == l
+
+					if(l != ol){
+						f.removeClass("secsign-error");
+						f.next().fadeOut();
+						
+						f.unbind();
+					}
+				});*/
+				
+				errorField.on("input", function(){
+					var f = AJS.$(this);
+					f.removeClass("secsign-error");
+					f.next().fadeOut();
+					
+					// check whether there other textfields?
+					var remainingErrorFields = AJS.$("input.secsign-error");
+					if(remainingErrorFields.length < 1){
+						// no error input fields left...
+						AJS.$("#secsignid-users-wrapper .aui-message.error").fadeOut();
+					}
+				});
+
+				errorField.focus().val(ef.val());
+			});
+		</script>
+	#end
+	
+	<div class="secsignid-cl x2"></div>
+	
+	<style>
+		span.star {
+			font-weight:bold;font-size:9px;color:#003366;
+		}
+		
+		.star-descr > span.star {
+			background-color:#2a67a5;
+			background-color:#3572B0;
+			position:absolute;
+			z-index:1000;
+			display:block;
+			height:30px;
+			width:30px;
+			line-height:30px;
+			margin:-6px 0px 0px -55px;
+			text-align:center;
+			font-weight:bold;
+			font-size:11px;
+			color:#fff;
+		}
+	</style>
+	
+	#if($showValues)
+	<form id="secsignid-users-mapping" class="aui long-label" method="post" action="${req.contextPath}/secure/$secSignActionName!editUsers.jspa">
+	#else
+	<form id="secsignid-users-mapping" class="aui long-label" method="post" action="${req.contextPath}/secure/$secSignActionName!saveUsers.jspa">
+	#end
+	
+	#set($showStarDescr = false)
+	#foreach($group in $groupNames)
+		#set($userlist = $jiraUsersByGroup.get($group))
+		#if($userlist.size() > 0)
+		
+		<div class="secsignid-lb">
+			<div class="secsignid-label groupname">$group</div>
+		</div>
+			
+		<div class="field-group">
+			<label><b>$i18n.getText('secsignid.users.username.label')</b></label>
+			<div style="color:#333;margin-left:5px;padding-top: 5px;"><b>$i18n.getText('secsignid.users.secsignid.label')</b></div>
+		</div>
+		
+		<div class="secsignid-cl"></div>
+		
+		##foreach ($user in $jiraUsers)
+		#foreach ($user in $userlist)
+			#set($name = $!user.getDisplayName())
+			#set($key = $!user.getKey())
+			#set($active = $!user.isActive())
+			#set($secSignIdArr = $secSignIdMappings.get($key))
+			#set($pwdIsAllowed = $pwdAllowed.get($key) == $pwdIsAllowedValue)
+			#set($pwdkey = "${key}-pwd-allowed")
+			#set($secSignId="")
+			#set($err="")
+			#foreach ($!element in $secSignIdArr)
+				#if($element != "")
+					#if($element == $secSignIdErrorCause)
+						#set($err = $secSignIdErrorCause)
+					#end
+					#if($secSignId != "")
+		   				#set($secSignId = "$secSignId, $element")
+		   			#else
+		   				#set($secSignId = "$element")
+		   			#end
+	   			#end
+			#end
+			
+			#set($showStar = $secSignId == "" && !$pwdIsAllowed)
+			#set($showStarDescr = $showStarDescr || $showStar)
+			
+			<div class="field-group">
+				#if($active)
+				<label>$name ($key)</label>
+				#else
+				<label><span style="text-decoration:line-through;">$name</span> (<span style="text-decoration:line-through;">$key</span>) / $i18n.getText('secsignid.users.secsignid.inactive')</label>
+				#end
+				
+				#if($showValues)
+				<div class="secsignid-rightcolumn secsignid-label value">$!secSignId</div>
+				#else
+					#if($err == "")
+						<input 	class="text"
+								style="float:left"
+								type="text" 
+								id="$key" 
+								name="$key"
+								value="$secSignId"
+								title="$i18n.getText('secsignid.users.secsignid.description') $name"
+								size="125"/>
+						<span class="secsign-empty" style="float:left"></span>
+					#else
+						<input 	class="text secsign-error anim"
+								style="float:left"
+								faultyvalue="$err"
+								type="text" 
+								id="$key" 
+								name="$key"
+								value="$secSignId"
+								title="$i18n.getText('secsignid.users.secsignid.description') $name"
+								size="125"/>
+						<span class="secsign-error-dot" style="float:left">&diams;</span>
+					#end
+				#end
+				<div for="$pwdkey" style="margin:3px 0px 0px 20px;float:left;text-align:left;font-size:10pt;">
+				#if($showValues)
+					#if($pwdIsAllowed)
+						<input 	class="secsignid-rightcolumn pwd-allowed"
+							type="checkbox"
+							id="$pwdkey" 
+							name="$pwdkey"
+							value="1"
+							checked="checked"
+							DISABLED
+							title="$i18n.getText('secsignid.options.pwdallowed')"/>
+					#else
+
+						<input 	class="secsignid-rightcolumn pwd-allowed"
+							type="checkbox" 
+							id="$pwdkey" 
+							name="$pwdkey"
+							value="1"
+							DISABLED
+							title="$i18n.getText('secsignid.options.pwdallowed')"/>
+					#end
+				#else
+					#if($pwdIsAllowed)
+						<input 	class="secsignid-rightcolumn pwd-allowed"
+							type="checkbox" 
+							id="$pwdkey" 
+							name="$pwdkey"
+							value="1"
+							checked="checked"
+							title="$i18n.getText('secsignid.options.pwdallowed')"/>
+					#else
+
+						<input 	class="secsignid-rightcolumn pwd-allowed"
+							type="checkbox" 
+							id="$pwdkey" 
+							name="$pwdkey"
+							value="1"
+							title="$i18n.getText('secsignid.options.pwdallowed')"/>
+					#end
+				#end
+				$i18n.getText('secsignid.options.pwdallowed')</div> 
+				
+				#if($showStar)
+				<span class="star v">
+				#else
+				<span class="star" style="display:none;">
+				#end
+				&nbsp;&nbsp;&nbsp;&bigstar;
+				</span>
+				
+				
+				<div class="description" style="clear:both">
+					$i18n.getText('secsignid.options.groups') $action.getGroupNamesForUser($user)
+				</div>
+			</div>
+		#end
+		
+		<div class="secsignid-cl"></div>
+		#end
+		#end
+		
+		<!-- https://docs.atlassian.com/aui/latest/docs/messages.html -->
+		<div style="display:block;position:relative;height:70px;clear:both;margin-bottom:20px;">
+			#if($showStarDescr)
+			 	<div class="aui-message info star-descr"><span class="star">&bigstar;</span>
+			 		$i18n.getText('secsignid.menu.users.description.detailed.nosecsignid')
+			 	</div>
+			#else
+			 	<div class="aui-message info star-descr" style="display:none"><span class="star">&bigstar;</span>
+			 		$i18n.getText('secsignid.menu.users.description.detailed.nosecsignid')
+			 	</div>
+			#end
+		</div>
+		
+		<div>
+		#if($showValues)
+			<button style="float:right" class="secsignid-button aui-button" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="E" 
+					title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.name')</button>
+		#else
+			<button style="float:right" class="secsignid-button aui-button aui-button-primary" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="S" 
+					title="$i18n.getText('secsignid.buttons.save.name')">$i18n.getText('secsignid.buttons.save.name')</button>
+		#end
+		</div>
+	</form>          
+</div>         
+
+
+
+
+</body>
+</html>

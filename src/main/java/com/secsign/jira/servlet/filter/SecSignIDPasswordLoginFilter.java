@@ -21,9 +21,14 @@ import com.secsign.jira.ao.SecSignIDUsersActiveObject;
 public class SecSignIDPasswordLoginFilter extends PasswordBasedLoginFilter {
 
     /**
+     * logger instance for this class
+     */
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SecSignIDPasswordLoginFilter.class);
+    
+    /**
      * Represents a username password pair of user credentials.
      */
-    private static class SecSignIDUserPwdPair
+    private class SecSignIDUserPwdPair
     {
         final String userName;
         final String password;
@@ -66,11 +71,29 @@ public class SecSignIDPasswordLoginFilter extends PasswordBasedLoginFilter {
     }
     
     
+    /**
+     * Performs the actual authentication (if required) and returns the status code. Status code is chosen to be one of
+     * these:
+     * <p/>
+     * The possible statuses are:
+     * <ul>
+     * <li> BaseLoginFilter.LOGIN_SUCCESS - the login was processed, and user was logged in
+     * <li> BaseLoginFilter.LOGIN_FAILURE - the login was processed, the user gave a bad username or password
+     * <li> BaseLoginFilter.LOGIN_ERROR - the login was processed, an exception occurred trying to log the user in
+     * <li> BaseLoginFilter.LOGIN_NOATTEMPT - the login was no processed, no form parameters existed
+     * </ul>
+     * <p/>
+     *
+     * @param httpServletRequest  the HTTP request in play
+     * @param httpServletResponse the HTTP response in play
+     *
+     * @return authentication status
+     */
     @Override
     public String login(final HttpServletRequest request, final HttpServletResponse response)
     {
         // TODO: extract secsign id login field and put it into the user pwd pair to differ between a machine login and a secsign id login
-        SecSignIDUserPwdPair userPair = extractUserPasswordPair(request, true);
+        SecSignIDUserPwdPair userPair = extractJiraUserPasswordPair(request);
         
         // check username
         if(userPair.userName != null && userPair.password != null){
@@ -86,15 +109,21 @@ public class SecSignIDPasswordLoginFilter extends PasswordBasedLoginFilter {
                         // check whether user is allowed to login using password
                         Integer isPasswordAllowed = SecSignIDUsersActiveObject.getPasswordLoginAllowedForApplicationUser(ao, appUser);
                         
+                        logger.info("application user '" + userPair.userName + "' trys to login using password. password allowed: " + isPasswordAllowed + ", assigned secsign ids: " + SecSignIDUsersActiveObject.getSecSignIdsString(secSignIds));
+                        
                         if(! isPasswordAllowed.equals(SecSignIDConstants.PasswordLoginIsAllowed)){
+                            
                             // at least run the other login interceptors
                             List<LoginInterceptor> interceptors = getSecurityConfig().getInterceptors(LoginInterceptor.class);
                             for(LoginInterceptor loginInterceptor : interceptors){
                                 loginInterceptor.beforeLogin(request, response, userPair.userName, userPair.password, userPair.persistent);
                             }
                             
+                            // return "failed"
                             return LOGIN_FAILED;
                         }
+                    } else {
+                        logger.info("application user '" + userPair.userName + "' trys to login using password, but no secsign id was assigned. allow access using password.");
                     }
                 }
             }
@@ -103,9 +132,17 @@ public class SecSignIDPasswordLoginFilter extends PasswordBasedLoginFilter {
         return super.login(request, response);
     }
     
-    
-    protected SecSignIDUserPwdPair extractUserPasswordPair(HttpServletRequest httpServletReq, boolean ownClass) {
-     // String login = httpServletReq.getParameter(SecSignIDConstants.JIRA_LOGIN_FORM_SUBMIT_PARAM_NAME);
+    /**
+     * Extracts username and password from given http servlet request
+     * @param httpServletReq the http servlet request
+     * 
+     * @see com.secsign.jira.servlet.filter.SecSignIDPasswordLoginFilter.SecSignIDUserPwdPair
+     * @see com.atlassian.seraph.filter.UserPasswordPair
+     * 
+     * @return the username password pair
+     */
+    protected SecSignIDUserPwdPair extractJiraUserPasswordPair(HttpServletRequest httpServletReq) {
+        // String login = httpServletReq.getParameter(SecSignIDConstants.JIRA_LOGIN_FORM_SUBMIT_PARAM_NAME);
         String userName = httpServletReq.getParameter(SecSignIDConstants.JIRA_LOGIN_USER_PARAM_NAME);
         String password = httpServletReq.getParameter(SecSignIDConstants.JIRA_LOGIN_PWD_PARAM_NAME);
         boolean persistent = Boolean.getBoolean(httpServletReq.getParameter(SecSignIDConstants.JIRA_LOGIN_PERSITENCE_PARAM_NAME));
@@ -113,9 +150,14 @@ public class SecSignIDPasswordLoginFilter extends PasswordBasedLoginFilter {
         return new SecSignIDUserPwdPair(userName, password, persistent);
     }    
     
+    /**
+     * Returns a username password pair for this request.
+     * @param httpServletReq the http servlet request in play
+     * @return user credentials or null
+     */
     @Override
     protected UserPasswordPair extractUserPasswordPair(HttpServletRequest httpServletReq) {
-        SecSignIDUserPwdPair ssidupp = extractUserPasswordPair(httpServletReq, true);
+        SecSignIDUserPwdPair ssidupp = extractJiraUserPasswordPair(httpServletReq);
         
         UserPasswordPair pair = new UserPasswordPair(ssidupp.userName, ssidupp.password, ssidupp.persistent);
         return pair;

@@ -1,0 +1,130 @@
+<html>
+<head>
+<title>$i18n.getText("secsignid.accesspass.secsignid.description")</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width">
+<meta name="decorator" content="atl.general" />
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-api-resources")
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+</head>
+<body class="secsignid-login secsignid-accesspass">
+
+<div id="secsignid-plugin" class="secsign-login-width">
+	<script type="text/javascript">
+	var checkSessionTimerId = undefined;
+	
+	jQuery(document).ready(function(){
+		var $ = jQuery.noConflict();
+		var checkAuthSessionStateInterval = 2000;
+		var checkAuthSessionStateFunc = function(){
+			var secSignIdApi = new SecSignIDApi({posturl : "$req.requestURL", optionalparams : {"secsignid-checkauthsession" : "1", "responseformat" : "url"}});
+			secSignIdApi.getAuthSessionState($("#secsignid").val(), $("#requestid").val(), $("#authsessionid").val(), 
+				function(responseMap){
+					if(responseMap){
+						//
+						//
+						//
+						var SESSION_STATE_PENDING = 1;
+						var SESSION_STATE_FETCHED = 7;
+						var authSessionState = parseInt(responseMap["authsessionstate"]);
+						if(authSessionState == SESSION_STATE_PENDING || authSessionState == SESSION_STATE_FETCHED){
+							// check again in 4 seconds
+							checkSessionTimerId = window.setTimeout(checkAuthSessionStateFunc, 2*checkAuthSessionStateInterval);
+						}
+						else {
+							// if state is expired, denied or something else, just reload page.
+							// the rest is checked by jira servlet
+							$("#secsignid-loginform").append("<input type='hidden' id='secsignid-checkauthsession' name='secsignid-checkauthsession' value='1'/>"); 
+							$("#secsignid-loginform").submit();
+							
+							// if the session might be accepted, jira handles the login. otherwise the error message is shown.
+						}
+					}
+			});
+		};
+		
+		checkSessionTimerId = window.setTimeout(checkAuthSessionStateFunc, checkAuthSessionStateInterval);
+		
+		if(! jQuery.device){ jQuery.device = {}; }
+    	jQuery.device.mobile = /(Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone)/i.test(navigator.userAgent);
+    	jQuery.device.iphone = /(iPhone).*AppleWebKit.*Safari/i.test(navigator.userAgent);
+    	jQuery.device.ipad = /(iPad).*AppleWebKit.*Safari/i.test(navigator.userAgent);
+    	jQuery.device.android = /android/i.test(navigator.userAgent);
+	
+		if(! jQuery.os){ jQuery.os = {}; }	
+		jQuery.os.iOS9 = (jQuery.device.iphone || jQuery.device.ipad) && /OS 9_/i.test(navigator.userAgent);
+		
+		if(! jQuery.browser){ jQuery.browser = {}; }
+		jQuery.browser.chrome = /Chrome/.test(navigator.userAgent) || /CriOS/.test(navigator.userAgent);
+    	jQuery.browser.safari = (jQuery.browser.webkit && !jQuery.browser.chrome); // in other browser like opera and firefox jQuery.browser.webkit is undefined.
+    	
+    	if(jQuery.device.mobile){
+	    	$("#open-secsignid-app").show();
+	    }
+    	
+		$("#open-secsignid-app").click(function(event){
+			var Login = {"secsignid" : "$secsignid",
+						"authsessionid" : "$authsessionid",
+						"returnurl" : String(window.location),
+						"idserverurl" : "$idserverurl",
+						};
+			if (jQuery.device.iphone)
+            {
+                // try to open the app
+            	if (jQuery.os.iOS9){
+            		window.location = "com.secsign.secsignid://?secsignid=" + Login["secsignid"] + 
+					 				  "&authsessionid=" + Login["authsessionid"] + 
+					 				  "&returnurl=" + Login["returnurl"] + 
+					 				  "&idserverurl=" + Login["idserverurl"];
+            	}
+            	else{
+            		// append an iframe to force the app being openend
+            		$("body").append("<iframe style='display:none;' src='" + 
+								 "com.secsign.secsignid://?secsignid=" + Login["secsignid"] + 
+								 "&authsessionid=" + Login["authsessionid"] + 
+								 "&returnurl=" + Login["returnurl"] + 
+								 "&idserverurl=" + Login["idserverurl"] + "' />");
+            	}
+            } else {
+            	Login["returnurl"] = Login["returnurl"].substr(Login["returnurl"].indexOf("://")+3);
+                // old version
+                //iframe.attr("src", "com.secsign.secsignid://" + Login["secsignid"] + "/" + Login["authsessionid"] + "?" + Login["returnurl"]);
+                
+                // new version
+                $("body").append("<iframe style='display:none;' src='" +
+                				 "com.secsign.secsignid://?secsignid=" + Login["secsignid"] + "&authsessionid=" + Login["authsessionid"] + "&returnurl=" + Login["returnurl"] + "&idserverurl=" + Login["idserverurl"]
+                				 + "'></iframe>");
+            }
+		});
+    });
+	</script>
+	
+	<div class="secsignidlogo"><img src="$req.contextPath/download/resources/com.secsign.secsignid:secsignid-resources/images/secsign-company-logo.png"></div>
+	<form id="secsignid-loginform" action="$req.requestURL" method="post">
+            
+        <div id="secsignid-accesspass-container" 
+        	style="background: url($req.contextPath/download/resources/com.secsign.secsignid:secsignid-resources/images/accesspass_bg.png) no-repeat top right;background-size: 180px auto;}">
+            <img id="secsignid-accesspass-img" src="data:image/png;base64,$authsessionicondata">
+        </div>
+
+        <div style="width:100%;display:block;margin-top:20px;margin-bottom:30px">
+        		<b>$i18n.getText('secsignid.messages.accesspass') $secsignid</b>
+        		<br>
+
+                <input type="hidden" id="secsignid" name="secsignid" value="$secsignid"/>
+                <input type="hidden" id="authsessionid" name="authsessionid" value="$authsessionid"/>
+                <input type="hidden" id="requestid" name="requestid" value="$requestid"/>
+                <input type="hidden" id="servicename" name="servicename" value="$servicename"/>
+                <input type="hidden" id="serviceaddress" name="serviceaddress" value="$serviceaddress"/>
+                <input type="hidden" id="authsessionicondata" name="authsessionicondata" value="$authsessionicondata"/>
+                <input type="hidden" id="returnUrl" name="returnUrl" value="$returnUrl"/>
+        </div>
+        <button id="secsignid-cancel-button" name="secsignid-cancel-button" class="secsignid-button grey login" type="submit">$i18n.getText('secsignid.buttons.cancel.name')</button>
+    </form>
+    
+
+    <button id="open-secsignid-app" name="open-secsignid-app" class="secsignid-button openapp" style="display:none">$i18n.getText('secsignid.messages.openapp')</button>
+</div>
+
+</body>
+</html>

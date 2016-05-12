@@ -1,0 +1,111 @@
+<div id="secsignid-profile-fragment" class="module" style="display:none">
+
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+$webResourceManager.requireResource("com.atlassian.auiplugin:dialog2")
+
+
+<script>
+	AJS.toInit(function($) { 
+		JIRA.Dialogs.secSignIdDialog = new JIRA.FormDialog({
+    	   	 	id: "secsignid-dialog",
+	        	trigger: "a.trigger-secsign-dialog",
+        		ajaxOptions: JIRA.Dialogs.getDefaultAjaxOptions,
+	        	onSuccessfulSubmit : function(){
+
+					// update the input fields...
+					var secSignId = AJS.$("#secsignid").val();
+					var span = AJS.$("#secsignid-value span")
+					if(secSignId){
+						span.addClass("value").css({"font-weight":"bold"}).text(secSignId);
+					} else {
+						span.removeClass("value").css({"font-weight":"normal"}).text("$i18n.getText('secsignid.profile.secsignid.noassigned')");
+					}
+					
+					if(AJS.$("#pwd-allowed").attr("checked")){
+						AJS.$("#pwd-allowed-value").attr("checked", "checked");
+					} else {
+						AJS.$("#pwd-allowed-value").removeAttr("checked");
+					}
+					
+					// show update message							
+					AJS.$("#secsigniddetails-notify-info").fadeIn();
+	        	},
+	        	onDialogFinished : function(){
+	        		// always called when submit was successful
+	        		// override this, otherwise the complete page is reloaded
+	        	},
+        		autoClose : true // This tells the dialog to automatically close after a successful form submit.
+	    	});
+	});
+</script>
+
+<div id="secsignid-details" class="module vcard">
+	<div class="mod-header">
+		<h3>$i18n.getText('secsignid.name')</h3>
+	</div>
+	<div id="secsigniddetails-notify-info" class="aui-message info" style="display:none">
+		<span class="aui-icon icon-info"></span>$i18n.getText('secsignid.dialog.secsignid.success')
+	</div>
+	<div class="mod-content" style="margin-top:5px">
+		<div class="aui-group">
+			<div class="aui-item">
+				<ul class="item-details">
+					<li data-userdata-group="user-details">
+						<dl data-userdata-row="secsignid">
+							<dt>$i18n.getText('secsignid.name'):</dt>
+							<dd id="secsignid-value">
+							#if($!secsignidstr != "")
+								<span class="secsignid-label value" style="font-weight:bold;padding:2px 10px;">$!secsignidstr</span>
+							#else
+								<span class="secsignid-label" style="padding:2px 10px;">$i18n.getText('secsignid.profile.secsignid.noassigned')</span>
+							#end
+							</dd>
+						</dl>
+						#if($logged-in-isadmin == "true")
+						<dl>
+							<dt>
+								<label for="pwd-allowed-value">$i18n.getText('secsignid.profile.secsignid.password.allowed')</label>
+							</dt>
+							<dd id="secsignid-value" class="description">
+							#if($pwdallowed == $is-pwdallowed-value)
+								<input type="checkbox" id="pwd-allowed-value" name="pwd-allowed-value" value="1" checked=checked disabled>
+							#else
+								<input type="checkbox" id="pwd-allowed-value" name="pwd-allowed-value" value="1" disabled>
+							#end
+							</dd>
+						</dl>
+						#end
+
+						#set($jiraLower = $jirauserurldec.toLowerCase())
+						<dl style="margin-top:20px" data-userdata-row="edit-secsignid">
+							<dt></dt>
+							<dd class="description">
+								<!--<button class="secsignid-button aui-button" 
+										style="min-widht:120px;"
+										id="secsignid-button" 
+										name="secsignid-button" 
+										accesskey="E" title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.name')</button>-->
+								<a id="edit_secsignids_button_lnk" 
+											class="trigger-secsign-dialog aui-button" 
+											href="/jira/secure/SecSignID!dialog.jspa?username=$jiraLower"
+											title="$i18n.getText('secsignid.buttons.edit.name')"
+											style="min-width:100px;text-align:center;">
+											$i18n.getText('secsignid.buttons.edit.name')</a>
+									<!--<button class="secsignid-button" 
+										style="width:100%;height:100%;"
+										id="secsignid-button" 
+										name="secsignid-button" 
+										accesskey="E" title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.name')</button>
+										-->
+							</dd>
+						</dl>
+					</li>
+				</ul>
+			</div>
+		</div> <!-- end of aui-group -->
+	</div> <!-- end of mod-content -->
+	
+	
+	
+</div> <!-- end of secsignid-details -->
+</div> <!-- end of secsignid-profile-fragment -->

@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>$i18n.getText('secsignid.dialog.secsignid.description') $jiraUserDisplayName ($jiraUserName)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="decorator" content="atl.general" />
+</head>
+<body>
+
+	
+    <h2 class="aui-dialog2-header-main">$i18n.getText('secsignid.dialog.secsignid.description') $jiraUserDisplayName ($jiraUserName)</h2>
+	
+    <form action="SecSignID.jspa" method="post" class="aui">
+    
+    <div class="aui-dialog2-content">
+    	
+    	#if(${action.hasErrorMessages})
+    	<div class="aui-message error"><span class="aui-icon icon-error"></span>
+			#foreach($message in $action.flushedErrorMessages)
+            	<p>$message</p>
+        	#end
+    	</div>
+		#end    
+    
+    	<span style="color:#599fcb;font-size:12pt;">$i18n.getText('secsignid.name')</span>
+    	<p style="color:#555;">$i18n.getText('secsignid.profile.secsignid.tooltip')</p>
+    	
+		<input type="text" id="secsignid" name="secsignid" value="$secSignId" class="aui-dialog" autocapitalize="off" autocorrect="off">
+		
+		<input type="hidden" id="jirauser" name="jirauser"  value="$jiraUserName">
+		<!--<input type="hidden" id="returnUrl" name="returnUrl"  value="/jira/secure/ViewProfile.jspa?name=$jiraUserName">-->
+		<!--<input type="hidden" id="returnUrl" name="returnUrl"  value="/jira/secure/admin/user/ViewUser.jspa?name=$jiraUserName">-->
+		<input type="hidden" id="returnUrl" name="returnUrl"  value="$referingUri">
+		
+		#if($loggedInIsAdmin)
+		<label for="pwd-allowed">
+			#if($pwdAllowed == $isPwdAllowedValue)
+				<input type="checkbox" id="pwd-allowed" name="pwd-allowed" value="1" checked=checked>
+			#else
+				<input type="checkbox" id="pwd-allowed" name="pwd-allowed" value="1">
+			#end
+		$i18n.getText('secsignid.profile.secsignid.password.allowed')</label>
+		#end
+    </div>
+    
+    
+     <div class="buttons-container form-footer">
+            <div class="buttons">
+                 <button id="dialog-save-button" 
+            		type="submit"
+            		class="aui-button"
+            		style="margin-left:20px">$i18n.getText('secsignid.buttons.save.name')</button>
+            
+                <!--<button id="dialog-close-button" class="aui-button aui-button-link">$i18n.getText('secsignid.buttons.cancel.name')</button>-->
+                <a class="cancel" href="/jira/secure/ViewProfile.jspa?name=$jiraUserName" id="secsignid-update-cancel" title="Cancel">$i18n.getText('secsignid.buttons.cancel.name')</a>
+            </div>
+        </div>
+  
+    </form>
+
+
+</body>
+</html>

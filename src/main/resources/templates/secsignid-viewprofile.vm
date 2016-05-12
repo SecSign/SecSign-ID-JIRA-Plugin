@@ -1,0 +1,147 @@
+<div id="secsignid-profile-fragment" class="module">
+
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+$webResourceManager.requireResource("com.atlassian.auiplugin:dialog2")
+
+
+<script>
+	AJS.toInit(function($) { 
+		// var $ = jQuery.noConflict(); // should be handled by JIRA and AJS
+		/*AJS.$("#secsignid-button, .jira-edit-option").click(function() {
+			AJS.dialog2("#secsignid-dialog").show();
+			
+			AJS.$("#secsignid").focus();
+			//var inputField = document.getElementById("secsignid");
+			//inputField.setSelectionRange(inputField.value.length, inputField.value.length);
+		});
+		*/
+		/*AJS.$("#dialog-close-button").click(function(event) {
+			event.preventDefault();
+			AJS.dialog2("#secsignid-dialog").hide();
+		});*/
+		
+		// https://developer.atlassian.com/static/javadoc/jira/reference/com/atlassian/jira/pageobjects/dialogs/FormDialog.html
+		// https://bitbucket.org/atlassian_tutorial/jira-scheduler-dialog-complete/src/5a526ad23213d9041fb3dab11b739cecf589c893/src/main/resources/javascript/scheduler.js?at=master&fileviewer=file-view-default
+		// https://docs.atlassian.com/aui/latest/docs/dialog.html
+		//
+		// http://git.ptrsoft.com/projects/PMSTEM/repos/pmsdata/browse/jira/jira-inst/includes/jira/dialog/FormDialog.js?at=master
+		JIRA.Dialogs.secSignIdDialog = new JIRA.FormDialog({
+    	   	 	id: "secsignid-dialog",
+	        	trigger: "a.trigger-secsign-dialog",
+        		ajaxOptions: JIRA.Dialogs.getDefaultAjaxOptions,
+	        	onSuccessfulSubmit : function(){
+
+					// update the input fields...
+					// update the input fields...
+					var secSignId = AJS.$("#secsignid").val();
+					var span = AJS.$("#secsignid-value")
+					if(secSignId){
+						span.css({"font-weight":"bold"}).text(secSignId);
+					} else {
+						span.css({"font-weight":"normal"}).text("$i18n.getText('secsignid.profile.secsignid.noassigned')");
+					}
+
+					if(AJS.$("#pwd-allowed").attr("checked")){
+						AJS.$("#pwd-allowed-value").attr("checked", "checked");
+					} else {
+						AJS.$("#pwd-allowed-value").removeAttr("checked");
+					}
+					
+					// show update message							
+					AJS.$("#secsigniddetails-notify-info").fadeIn();
+		
+					/*
+					AJS.messages.generic("#context", {
+   						title: 'This is a title in a default message.',
+						body: '<p> And this is just content in a Default message.</p>'
+					});
+					*/
+	        	},
+	        	/*onUnSuccessfulSubmit : function(xhr, textStatus, errorThrown, smartAjaxResult){
+	        		// no need for this. mostly called when a connection error occurs.
+	        		// in that case jira and js will insert the resulting message automatically in existing dialog
+	        		alert("error....");
+	        	},
+	        	*/
+	        	
+	        	onDialogFinished : function(){
+	        		// always called when submit was successful
+	        		// override this, otherwise the complete page is reloaded
+	        	},
+        		autoClose : true // This tells the dialog to automatically close after a successful form submit.
+	    	});
+	});
+</script>
+
+#set($jiraLower = $jirauserurldec.toLowerCase())
+<div class="mod-header">
+    <ul class="ops">
+    	<!--<li class="jira-edit-option aui-button aui-button-subtle">
+        	<span class="aui-icon aui-icon-small aui-iconfont-edit">Edit</span>
+        </li>-->
+        	<li>
+		        <a id="edit_secsignids_lnk" class="trigger-secsign-dialog aui-button aui-button-subtle" href="/jira/secure/SecSignID!dialog.jspa?username=$jiraLower" title="$i18n.getText('secsignid.buttons.edit.name')">
+        		    <span class="aui-icon aui-icon-small aui-iconfont-edit">$i18n.getText('secsignid.buttons.edit.name')</span>
+		        </a>
+		    </li>
+    </ul>
+    <h3>$i18n.getText('secsignid.name')</h3>
+</div>
+<div class="mod-content">
+	<div id="secsigniddetails-notify-info" class="aui-message info" style="display:none">
+		<span class="aui-icon icon-info"></span>$i18n.getText('secsignid.dialog.secsignid.success')
+	</div>
+	<!--<div id="secsigniddetails-notify-error" class="aui-message error" style="display:none">
+		<span class="aui-icon icon-info"></span>$!errorMessage
+	</div>-->
+	
+    <ul class="item-details">
+        <li>
+			<dl title="$i18n.getText('secsignid.profile.secsignid.tooltip')">
+				<dt>$i18n.getText('secsignid.name'):</dt>
+				
+				#if($!secsignidstr != "")
+					<dd id="secsignid-value" class="description" style="font-weight:bold">$!secsignidstr</dd>
+				#else
+					<dd id="secsignid-value" class="description">$i18n.getText('secsignid.profile.secsignid.noassigned')</dd>
+				#end
+    			
+			</dl>
+			#if($logged-in-isadmin == "true")
+			<dl>
+				<dt>
+					<label for="pwd-allowed-value">$i18n.getText('secsignid.profile.secsignid.password.allowed')</label>
+				</dt>
+				<dd id="secsignid-value" class="description">
+				#if($pwdallowed == $is-pwdallowed-value)
+					<input type="checkbox" id="pwd-allowed-value" name="pwd-allowed-value" value="1" checked=checked disabled>
+				#else
+					<input type="checkbox" id="pwd-allowed-value" name="pwd-allowed-value" value="1" disabled>
+				#end
+				</dd>
+			</dl>
+			#end
+			<!--
+			<dl>
+				<dt></dt>
+				<dd class="description">
+					 <a id="edit_secsignids_button_lnk" 
+					 			class="trigger-secsign-dialog aui-button aui-button-subtle" 
+					 			href="/jira/secure/SecSignID!dialog.jspa?username=$jirauserurldec" 
+					 			title="$i18n.getText('secsignid.buttons.edit.name')"
+								style="float:right;width:120px;height:25px;padding:0px;">
+						<button class="secsignid-button" 
+							style="width:100%;height:100%;"
+							id="secsignid-button" 
+							name="secsignid-button" 
+							accesskey="E" title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.name')</button>
+					</a>
+				</dd>
+			</dl>
+			-->
+		</li>
+	</ul>
+</div>
+
+
+</div>

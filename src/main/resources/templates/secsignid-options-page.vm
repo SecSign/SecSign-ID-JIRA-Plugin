@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>$i18n.getText("secsignid.menu.options.label")</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="decorator" content="atl.admin" />
+<meta name="admin.active.section" content="users_groups_configuration/embedded_crowd_section" />
+<meta name="admin.active.tab" content="secsignid_options" />
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+</head>
+<body>
+
+
+
+<div id="secsignid-options-wrapper" class="secsignid-wrapper no-border">
+	
+	<header class="aui-page-header"><div class="aui-page-header-inner"><div class="aui-page-header-main">
+		<div class="secsign-logo-small"></div><h1>$i18n.getText('secsignid.menu.options.label')</h1>
+	</div></div></header>
+	
+	#if($showMessage)
+		<div class="aui-message aui-message-success">
+    		<p class="title">
+       		 <strong>$i18n.getText('secsignid.messages.success')</strong>
+    		</p>
+    		<p>$i18n.getText('secsignid.options.saved.sucessfully')</p>
+		</div>
+	#end
+	
+	#if(${action.hasErrorMessages})
+    	<div class="aui-message error"><span class="aui-icon icon-error"></span>
+			#foreach($message in $action.flushedErrorMessages)
+            	<p>$message</p>
+        	#end
+    	</div>
+    	
+    	<script type="text/javascript">
+			AJS.toInit(function($) {
+				AJS.$("input.secsign-error").change(function(){
+					var f = AJS.$(this);
+					f.removeClass("secsign-error");
+					f.next().fadeOut();
+				};
+			});
+		</script>
+	
+	#end
+	
+	<div class="secsignid-cl x2"></div>
+	
+	
+	#if($showValues)
+	<form id="secsignid-options" class="aui long-label" method="post" action="${req.contextPath}/secure/$secSignActionName!editOptions.jspa">
+	#else
+	<form id="secsignid-options" class="aui long-label" method="post" action="${req.contextPath}/secure/$secSignActionName!saveOptions.jspa">
+	#end
+	
+	<div class="field-group">
+		<label title="$i18n.getText('secsignid.options.servicename.description')">$i18n.getText('secsignid.options.servicename.name')</label>
+			
+		#if($showValues)
+		<div class="secsignid-rightcolumn secsignid-label value">$action.getServiceName()</div>
+		#else	
+		## Note: ${serviceName} is the same as $action.getServiceName()
+        ## It's important to encode the inputs to avoid XSS hacks
+        ## JSP does this for you but Velocity templates don't.
+		<input 	class="text"
+					type="text" 
+					id="serviceName" 
+					name="serviceName"
+					value="$textutils.htmlEncode(${serviceName})"
+					title="$i18n.getText('secsignid.options.servicename.description')"
+					size="125"/>
+					
+		<div class="description" title="$i18n.getText('secsignid.options.servicename.description') $i18n.getText('secsignid.options.servicename.description.eg')">$i18n.getText('secsignid.options.servicename.description')<br>$i18n.getText('secsignid.options.servicename.description.eg')</div>
+		#end
+			
+	</div>
+
+	<div class="secsignid-cl"></div>
+	
+	<div class="field-group">
+		<label title="$i18n.getText('secsignid.options.idserverurl.description')">$i18n.getText('secsignid.options.idserverurl.name')</label>
+			
+		#if($showValues)
+		<div class="secsignid-rightcolumn secsignid-label value">$action.getIdServerUrl()</div>
+		#else
+		<input 	class="text"
+					type="text" 
+					id="idServerUrl" 
+					name="idServerUrl"
+					value="$textutils.htmlEncode(${idServerUrl})"
+					title="$i18n.getText('secsignid.options.idserverurl.description')"
+					size="125"/>
+		<div class="description" title="$i18n.getText('secsignid.options.idserverurl.description') $i18n.getText('secsignid.options.idserverurl.description.eg')">$i18n.getText('secsignid.options.idserverurl.description.eg')</div>
+		<div class="description" title="$i18n.getText('secsignid.options.idserverurl.description.default')">$i18n.getText('secsignid.options.idserverurl.description.default')</div>
+		#end
+	</div>
+
+	<div class="secsignid-cl"></div>
+		
+		
+	<div>
+		#if($showValues)
+			<button style="float:right" class="secsignid-button aui-button" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="E" 
+					title="$i18n.getText('secsignid.buttons.edit.name')">$i18n.getText('secsignid.buttons.edit.name')</button>
+		#else
+			<button style="float:right" class="secsignid-button aui-button aui-button-primary" type="submit" id="secsignid-submit" name="secsignid-submit"  accesskey="S" 
+					title="$i18n.getText('secsignid.buttons.save.name')">$i18n.getText('secsignid.buttons.save.name')</button>
+		#end
+	</div>
+	</form>          
+</div>   
+
+
+</body>
+</html>

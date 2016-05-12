@@ -1,0 +1,162 @@
+<html>
+<head>
+<title>$i18n.getText("secsignid.login.secsignid.description")</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width">
+<meta name="decorator" content="atl.general" />
+<!--$webResourceManager.requireResource("com.atlassian.auiplugin:ajs")-->
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-api-resources")
+$webResourceManager.requireResource("com.secsign.secsignid:secsignid-resources")
+</head>
+<body class="secsignid-login">
+
+
+<div id="error-message-pattern" class="aui-message aui-message-error" style="display:none">
+    <p class="title"><strong>$i18n.getText('secsignid.messages.error')</strong></p>
+    <p class="message"></p>
+</div>
+
+<div id="secsignid-message-box" class="secsign-login-width">
+	#if($errormsg)
+	<div class="aui-message aui-message-error">
+    		<p class="title">
+       		 <strong>$i18n.getText('secsignid.messages.error')</strong>
+    		</p>
+    		#if($errordscrkey)
+    		<p>$i18n.getText('$errormsgkey') $!idserverurl : $errormsg</p>
+    		#else
+    		<p>$errormsg</p>
+    		#end
+	</div>
+	#end
+	
+	#if($warnmsg)
+	<div class="aui-message aui-message-warning">
+    		<p class="title">
+    		</p>
+    		#if($warndscrkey)
+    		<p>$i18n.getText('$warndscrkey')</p>
+    		#else
+    		<p>$warnmsg</p>
+    		#end
+	</div>
+	#end
+</div>
+
+<a name="login/myjirahome"></a>
+<div id="secsignid-plugin" class="secsign-login-width">
+	<script type="text/javascript">
+	
+	jQuery(document).ready(function(){
+		var $ = jQuery.noConflict();
+		
+		var rememberMeCookie = AJS.Cookie.read("jira.secsign.rememberme");
+    	if(rememberMeCookie){
+    		$("#secsignid").val(rememberMeCookie);
+    		$("#rememberme").attr("checked", "checked");
+    	} else {
+    		$("#rememberme").removeAttr("checked");
+    	}
+		
+		$("#secsignid-loginform").submit(function(event){
+
+			var error = undefined;
+			var secSignId = $("#secsignid").val();
+			if(!secSignId){
+				error = "$i18n.getText('secsignid.messages.error.nosecsignid')";
+			}
+			
+			if(!SecSignIDApi.checkSecSignId(secSignId)){
+				error = "$i18n.getText('secsignid.messages.error.illegalcharacters')";
+			}
+			
+			if(error){
+				var errorField = $("#error-message-pattern").clone();
+				errorField.find(".message").text(error);
+			
+				$("#secsignid-message-box").html(errorField);			
+				errorField.fadeIn(200);
+			
+				window.setTimeout(function(){
+					errorField.fadeOut(600, function(){
+						errorField.remove();
+					})
+				}, 4000);
+			
+				$("#secsignid").focus();
+				
+				
+				event.preventDefault();
+				return false;
+			}
+			
+			if($("#rememberme").attr("checked")){
+				AJS.Cookie.save("jira.secsign.rememberme", secSignId);
+			} else {
+				AJS.Cookie.save("jira.secsign.rememberme", "");
+			}
+			return true;
+		});
+
+		// try to get focus from normal input field?
+		// actrually no need. as first input element jira will take care about focus
+		/*setTimeout( function(){								
+			try {
+				$("#login-secsignid").focus();
+				$("#login-secsignid").select();
+			} catch(ex) {
+			}
+		}, 100);*/
+		
+		/*$("#secsignid").bind("keyup", function(event){
+            var eventCode = event.which || event.keyCode;
+            if(eventCode == 13){
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // disable submit button, otherwise safari will submit the form twice
+                // $("#secsignid-login-button").attr("disabled", "disabled");
+                $("#secsignid-login").remove();
+                
+                // submit the form
+                $("#secsignid-loginform").trigger("submit");
+            }
+        });*/        
+	});
+	</script>
+	<div class="secsignidlogo"><img src="$req.contextPath/download/resources/com.secsign.secsignid:secsignid-resources/images/secsign-company-logo.png"></div>
+	
+	<form id="secsignid-loginform" action="$req.requestURL" method="post">
+    	<div class="form-group">
+    		<!-- the input field for the secsign id -->
+    		<input type="text" class="form-control login-field" value="" placeholder="SecSign ID" id="secsignid" name="secsignid" autocapitalize="off" autocorrect="off">
+    		
+    		<input type="hidden" id="secsignid-login" name="secsignid-login" value="true">
+    		<input type="hidden" id="returnUrl" name="returnUrl" value="$!returnUrl">
+        </div>
+
+        <div id="secsignid-checkbox-rememberme">
+			<span>
+	            <input id="rememberme" name="rememberme" type="checkbox" value="rememberme" checked>
+	            <label for="rememberme">$i18n.getText('secsignid.rememberme.secsignid.description')</label>
+	        </span>
+        </div>
+        <button id="secsignid-login-button" name="secsignid-login-button" class="secsignid-button login" type="submit">$i18n.getText('secsignid.buttons.login.name')</button>
+    </form>
+    <br><br>
+    <!--
+    <form id="secsignid-jiraloginform" action="$req.requestURL" method="POST">
+    	<div class="form-group">
+	    	<input type="hidden" id="jira-login" name="jira-login" value="true">
+	    	<input type="hidden" id="returnUrl" name="returnUrl" value="$!returnUrl">
+	    </div>
+		<button id="jira-login-button" name="jira-login-button" class="secsignid-button grey login" type="submit">$i18n.getText('secsignid.messages.switchtopwd')</button>
+    </form>    
+	-->
+	<form id="secsignid-jiraloginform" action="$!loginUrl" method="GET">
+        <button id="jira-login" name="jira-login" class="secsignid-button grey login" type="submit" value="true">$i18n.getText('secsignid.messages.switchtopwd')</button>
+    </form>
+</div>
+
+</body>
+</html>

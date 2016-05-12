@@ -9,11 +9,13 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.secsign.jira.contextproviders.SecSignIDJiraUserInfoProvider;
 import com.secsign.jira.util.SecSignIDCharArrayWriter;
 import com.secsign.jira.util.SecSignIDLogger;
 import com.secsign.jira.util.SecSignIDServletResponseWrapper;
+import com.secsign.jira.util.SecSignIDUserManager;
 
 /**
  * Filter the view user page and inject resources and code
@@ -24,10 +26,14 @@ import com.secsign.jira.util.SecSignIDServletResponseWrapper;
 public class SecSignIDViewUserFilter implements Filter {
 
     /**
+     * logger instance for this class
+     */
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SecSignIDViewUserFilter.class);
+    
+    /**
      * The template renderer
      * 
      * @see https://developer.atlassian.com/docs/atlassian-platform-common-components/atlassian-template-renderer
-     * @see 
      */
     private final TemplateRenderer templateRenderer;
     
@@ -64,22 +70,32 @@ public class SecSignIDViewUserFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         
-        SecSignIDLogger.debug(request.getParameterMap());
+        logger.debug("request parameter map: " + SecSignIDLogger.toString(request.getParameterMap()));
         
         // create a wrapper to render the template into a string.
         // after the original page was rendered we inject our rendered fragment just before the end of body.
         SecSignIDServletResponseWrapper responseWrapper = new SecSignIDServletResponseWrapper((HttpServletResponse)response);
         chain.doFilter(request, responseWrapper); // this usually takes 1second (on titus laptop) which is 98% of the time
         
+        ApplicationUser appUser = SecSignIDUserManager.getApplicationUser(request.getParameter("name"));
+        String possibleAppUserKey = request.getParameter("name").toLowerCase();
+                
         HashMap<String, Object> context = new HashMap<String, Object>();
-        context.put("profileUser", request.getParameter("name"));
-        context.put("jirauser", request.getParameter("name"));
-        context.put("jirauserurldec", URLEncoder.encode(request.getParameter("name"), "utf-8"));
+        
+        if(appUser != null){
+            context.put("profileUser", appUser);
+            context.put("jirauser", appUser.getKey());
+            context.put("jirauserurldec", URLEncoder.encode(appUser.getKey(), "utf-8"));
+        } else {
+            context.put("profileUser", possibleAppUserKey);
+            context.put("jirauser", possibleAppUserKey);
+            context.put("jirauserurldec", URLEncoder.encode(possibleAppUserKey, "utf-8"));
+        }
         
         SecSignIDJiraUserInfoProvider infoProvider = new SecSignIDJiraUserInfoProvider(ao);
         context = (HashMap<String, Object>) infoProvider.getContextMap(context);
         
-        SecSignIDLogger.debug(context, "context map of view user filter");
+        logger.debug("context map of view user filter: " + SecSignIDLogger.toString(context));
         
         // render the template fragment into the ViewUser.jspa
         // after that, the hidden fields will be put to the right place using javascript

@@ -20,6 +20,11 @@ import com.secsign.jira.util.SecSignIDLogger;
 public class SecSignIDAddUserAction extends SecSignIDCreateJiraUserAction {
 
     // https://developer.atlassian.com/jiradev/jira-platform/guides/issues/tutorial-displaying-content-in-a-dialog-in-jira
+    
+    /**
+     * logger instance for this class
+     */
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SecSignIDAddUserAction.class);
 
     /**
      * 
@@ -114,12 +119,14 @@ public class SecSignIDAddUserAction extends SecSignIDCreateJiraUserAction {
         try {
             super.doExecute();
         } catch (Exception ex) {
-            SecSignIDLogger.log(ex.getMessage());
+            logger.error(ex.getMessage());
             
             addErrorMessage(ex.getMessage());
         }
         
         HttpServletRequest httpServletRequest = getHttpRequest();
+        
+        logger.debug("doExecute / request parameter map: " + SecSignIDLogger.toString(httpServletRequest.getParameterMap()));
         
         // do we want to create another user immediatly after this?
         if (httpServletRequest.getParameter("createAnother") != null){

@@ -17,7 +17,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.user.UserEventType;
 import com.secsign.jira.ao.SecSignIDUsers;
 import com.secsign.jira.ao.SecSignIDUsersActiveObject;
-import com.secsign.jira.util.SecSignIDLogger;
+import com.secsign.jira.ao.SecSignPwdOpt;
 
 /**
  * Class which handles all events concerning user updates.
@@ -29,6 +29,14 @@ import com.secsign.jira.util.SecSignIDLogger;
  */
 public class SecSignIDUserEventListener implements InitializingBean, DisposableBean {
    
+    /**
+     * logger instance for this class
+     */
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SecSignIDUserEventListener.class);
+    
+    /**
+     * event publisher
+     */
     private final EventPublisher eventPublisher;
     
     /**
@@ -50,7 +58,7 @@ public class SecSignIDUserEventListener implements InitializingBean, DisposableB
     public void onUserEvent(com.atlassian.jira.event.user.UserEvent userEvent){
         int eventType = userEvent.getEventType();
         
-        SecSignIDLogger.log("eventType=" + eventType + " (" + getNameForEventType(eventType) + ") for user '" + userEvent.getUser() + "'");
+        logger.info("eventType=" + eventType + " (" + getNameForEventType(eventType) + ") for user '" + userEvent.getUser() + "'");
         
         if(eventType == UserEventType.USER_CREATED){
             
@@ -60,7 +68,7 @@ public class SecSignIDUserEventListener implements InitializingBean, DisposableB
                             com.atlassian.jira.component.ComponentAccessor.getJiraAuthenticationContext().getUser();
             com.atlassian.crowd.embedded.api.User initiatingUser = userEvent.getInitiatingUser();
             if(loggedInUser != null){
-                SecSignIDLogger.log("logged in app user '" + loggedInUser.getKey() + "'");
+                logger.info("logged in app user '" + loggedInUser.getKey() + "'");
             }
             
             if(loggedInUser != null && initiatingUser != null){
@@ -87,9 +95,14 @@ public class SecSignIDUserEventListener implements InitializingBean, DisposableB
             if(deletedEntity != null){
                 secSignIds = deletedEntity.getSecSignId();
             }
+            
+            SecSignPwdOpt deletedOptionsEntity = SecSignIDUsersActiveObject.deleteOptionsForSecSignIDFromDatabase(ao, userName);
+            if(deletedEntity != null){
+                secSignIds = deletedEntity.getSecSignId();
+            }
         } catch(Exception ex){
-            SecSignIDLogger.log("cannot delete secsign ids for user '" + userName + "': " + ex.getMessage());
-            SecSignIDLogger.log(ex);
+            logger.error("cannot delete secsign ids for user '" + userName + "': " + ex.getMessage(), ex);
+            
             
             HashMap<String, String[]> newMappings = new HashMap<String, String[]>();
             newMappings.put(userName, null);
@@ -98,7 +111,7 @@ public class SecSignIDUserEventListener implements InitializingBean, DisposableB
             SecSignIDUsersActiveObject.saveSecSignIdUserMappings(ao, newMappings);
         }
         
-        SecSignIDLogger.log("deleted '" + userName + "' and all assigned secsign ids '" + secSignIds + "' from database.");
+        logger.info("deleted '" + userName + "' and all assigned secsign ids '" + secSignIds + "' from database.");
     }
     
     /**

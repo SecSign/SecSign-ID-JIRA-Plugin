@@ -15,7 +15,6 @@ import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.user.UserProfile;
 import com.atlassian.seraph.auth.DefaultAuthenticator;
 import com.secsign.jira.SecSignIDConstants;
-import com.secsign.jira.util.SecSignIDLogger;
 
 
 /**
@@ -27,6 +26,11 @@ import com.secsign.jira.util.SecSignIDLogger;
  */
 public class SecSignIDAuthenticationFilter implements Filter {
 
+    /**
+     * logger instance for this class
+     */
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SecSignIDAuthenticationFilter.class);
+    
     /**
      * User manager
      */
@@ -181,7 +185,7 @@ public class SecSignIDAuthenticationFilter implements Filter {
                 requestUrlStr = requestUrl.getProtocol() + "://" + requestUrl.getAuthority();
             }
         } catch (MalformedURLException ex) {
-            SecSignIDLogger.log(ex.getMessage());
+            logger.error(ex.getMessage());
         }
         
         
@@ -208,7 +212,7 @@ public class SecSignIDAuthenticationFilter implements Filter {
                 baseUrl = requestUrlStr;
             }
         } catch (Exception ex) {
-            SecSignIDLogger.log(ex.getMessage());
+            logger.error(ex.getMessage());
         }
             
         return baseUrl;

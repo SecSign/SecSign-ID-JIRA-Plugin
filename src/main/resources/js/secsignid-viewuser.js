@@ -1,5 +1,5 @@
 /**
- * (c) 2015 SecSign Technologies Inc.
+ * (c) 2015 - 2016 SecSign Technologies Inc.
  *
  * Adding some functionality to the ViewUser.jspa page
  */
